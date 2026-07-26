@@ -1,0 +1,7 @@
+name = "room-management"
+compatibility_date = "2026-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "room-management-db"
+database_id = "ISI_DATABASE_ID_NANTI"
