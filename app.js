@@ -1,97 +1,14 @@
-const pages = document.querySelectorAll(".page");
-const navItems = document.querySelectorAll(".nav-item");
-const pageTitle = document.getElementById("page-title");
-const modal = document.getElementById("transaction-modal");
-const form = document.getElementById("transaction-form");
-
-const transactions = JSON.parse(localStorage.getItem("room_transactions") || "[]");
-
-const currency = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
-
-function showPage(pageId) {
-  pages.forEach((page) => page.classList.toggle("active", page.id === pageId));
-  navItems.forEach((item) => item.classList.toggle("active", item.dataset.page === pageId));
-  pageTitle.textContent =
-    pageId === "nikiroom" ? "NikiRoom" :
-    pageId === "vinzzroom" ? "VinzzRoom" :
-    pageId.charAt(0).toUpperCase() + pageId.slice(1);
-}
-
-function saveTransactions() {
-  localStorage.setItem("room_transactions", JSON.stringify(transactions));
-}
-
-function render() {
-  const nikiTable = document.getElementById("niki-table");
-  const vinzzTable = document.getElementById("vinzz-table");
-
-  nikiTable.innerHTML = "";
-  vinzzTable.innerHTML = "";
-
-  let totalIncome = 0;
-  let totalExpense = 0;
-
-  transactions.forEach((item) => {
-    totalIncome += Number(item.income || 0);
-    totalExpense += Number(item.expense || 0);
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${item.date || "-"}</td>
-      <td>${item.checkin || "-"}</td>
-      <td>${item.unit || "-"}</td>
-      <td>${item.duration || "-"}</td>
-      <td>${currency.format(item.income || 0)}</td>
-      <td>${currency.format(item.expense || 0)}</td>
-      <td>${item.description || "-"}</td>
-    `;
-
-    if (item.agent === "nikiroom") {
-      nikiTable.appendChild(row);
-    } else {
-      vinzzTable.appendChild(row);
-    }
-  });
-
-  document.getElementById("total-income").textContent = currency.format(totalIncome);
-  document.getElementById("total-expense").textContent = currency.format(totalExpense);
-  document.getElementById("net-balance").textContent = currency.format(totalIncome - totalExpense);
-}
-
-navItems.forEach((item) => {
-  item.addEventListener("click", () => showPage(item.dataset.page));
-});
-
-document.getElementById("add-btn").addEventListener("click", () => {
-  document.getElementById("date").valueAsDate = new Date();
-  modal.showModal();
-});
-
-document.getElementById("close-modal").addEventListener("click", () => modal.close());
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  transactions.push({
-    id: crypto.randomUUID(),
-    agent: document.getElementById("agent").value,
-    date: document.getElementById("date").value,
-    checkin: document.getElementById("checkin").value,
-    unit: document.getElementById("unit").value.trim(),
-    duration: document.getElementById("duration").value,
-    income: Number(document.getElementById("income").value || 0),
-    expense: Number(document.getElementById("expense").value || 0),
-    description: document.getElementById("description").value.trim(),
-  });
-
-  saveTransactions();
-  render();
-  form.reset();
-  modal.close();
-});
-
-render();
+const q=s=>document.querySelector(s),qa=s=>document.querySelectorAll(s),money=new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});let data=[],delId=null;
+function note(t,b=false){const n=q('#notice');n.textContent=t;n.className=b?'bad':'ok';setTimeout(()=>n.className='',3000)}
+async function api(url,opt={}){const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opt}),j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Terjadi kesalahan.');return j}
+function page(id){qa('.page').forEach(x=>x.classList.toggle('active',x.id===id));qa('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));q('#title').textContent=id==='nikiroom'?'NikiRoom':id==='vinzzroom'?'VinzzRoom':id[0].toUpperCase()+id.slice(1)}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function rows(agent,term=''){const body=q(agent==='nikiroom'?'#nikiBody':'#vinzzBody'),k=term.toLowerCase();body.innerHTML='';const list=data.filter(x=>x.agent===agent&&(!k||[x.unit,x.description,x.rental_duration].some(v=>String(v||'').toLowerCase().includes(k))));if(!list.length){body.innerHTML='<tr><td colspan="8">Belum ada transaksi.</td></tr>';return}list.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${x.date}</td><td>${x.check_in_time||'-'}</td><td>${esc(x.unit)}</td><td>${esc(x.rental_duration||'-')}</td><td>${money.format(x.income)}</td><td>${money.format(x.expense)}</td><td>${esc(x.description||'-')}</td><td><button class="edit" data-edit="${x.id}">Edit</button> <button class="remove" data-del="${x.id}">Hapus</button></td>`;body.appendChild(tr)})}
+function render(){rows('nikiroom',q('#nikiSearch').value);rows('vinzzroom',q('#vinzzSearch').value);let i=0,e=0;data.forEach(x=>{i+=Number(x.income||0);e+=Number(x.expense||0)});q('#incomeTotal').textContent=money.format(i);q('#expenseTotal').textContent=money.format(e);q('#balanceTotal').textContent=money.format(i-e)}
+async function load(){try{data=(await api('/api/transactions')).transactions||[];render()}catch(e){note(e.message,true)}}
+function reset(){q('#txForm').reset();q('#txId').value='';q('#income').value=0;q('#expense').value=0;q('#formTitle').textContent='Tambah Transaksi'}
+qa('nav button').forEach(b=>b.onclick=()=>page(b.dataset.page));q('#add').onclick=()=>{reset();q('#date').valueAsDate=new Date();q('#formDialog').showModal()};q('#cancel').onclick=()=>q('#formDialog').close();q('#nikiSearch').oninput=render;q('#vinzzSearch').oninput=render;
+document.onclick=e=>{const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-del]');if(eb){const x=data.find(v=>String(v.id)===eb.dataset.edit);q('#txId').value=x.id;q('#agent').value=x.agent;q('#date').value=x.date;q('#checkin').value=x.check_in_time||'';q('#unit').value=x.unit;q('#duration').value=x.rental_duration||'';q('#income').value=x.income;q('#expense').value=x.expense;q('#description').value=x.description||'';q('#formTitle').textContent='Edit Transaksi';q('#formDialog').showModal()}if(db){delId=db.dataset.del;q('#deleteDialog').showModal()}};
+q('#noDelete').onclick=()=>q('#deleteDialog').close();q('#yesDelete').onclick=async()=>{try{await api('/api/transactions/'+delId,{method:'DELETE'});note('Transaksi berhasil dihapus.');q('#deleteDialog').close();load()}catch(e){note(e.message,true)}};
+q('#txForm').onsubmit=async e=>{e.preventDefault();const id=q('#txId').value,p={agent:q('#agent').value,date:q('#date').value,check_in_time:q('#checkin').value,unit:q('#unit').value,rental_duration:q('#duration').value,income:Number(q('#income').value||0),expense:Number(q('#expense').value||0),description:q('#description').value};try{await api(id?'/api/transactions/'+id:'/api/transactions',{method:id?'PUT':'POST',body:JSON.stringify(p)});note(id?'Transaksi diperbarui.':'Transaksi ditambahkan.');q('#formDialog').close();load()}catch(err){note(err.message,true)}};
+q('#export').onclick=()=>{const h=['Agen','Tanggal','Jam','Unit','Lama Sewa','Pemasukan','Pengeluaran','Keterangan'],r=data.map(x=>[x.agent,x.date,x.check_in_time,x.unit,x.rental_duration,x.income,x.expense,x.description]),csv=[h,...r].map(a=>a.map(v=>'"'+String(v||'').replaceAll('"','""')+'"').join(',')).join('\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='laporan-room.csv';a.click();URL.revokeObjectURL(u)};load();

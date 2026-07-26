@@ -1,33 +1,14 @@
-# Room Management — Tahap 1
+# Room Management Tahap 2
 
-Tahap ini berisi fondasi frontend:
+Fitur: tambah, edit, hapus, pencarian, export CSV, dan Cloudflare D1.
 
-- Dashboard
-- Halaman NikiRoom terpisah
-- Halaman VinzzRoom terpisah
-- Form tambah transaksi
-- Penyimpanan sementara di browser memakai localStorage
-- Tampilan responsif untuk HP
-
-## Upload ke GitHub
-
-1. Buka repository `room-management`.
-2. Klik **Add file** → **Upload files**.
-3. Upload semua isi folder ini, bukan folder luarnya.
-4. Klik **Commit changes**.
-
-## Tes dengan GitHub Pages
-
-1. Buka repository → **Settings** → **Pages**.
-2. Pada Source pilih **Deploy from a branch**.
-3. Branch: `main`.
-4. Folder: `/root`.
-5. Save.
-
-Tahap 2 nanti:
-- Cloudflare Pages
-- Cloudflare D1
-- API transaksi
-- Login admin
-- Edit/hapus transaksi
-- Laporan dan export
+1. Upload semua file ke root repo `room-management` dan timpa file lama.
+2. Cloudflare Dashboard → D1 SQL Database → Create database.
+3. Nama database: `room-management-db`.
+4. Buka Console database, salin isi `schema.sql`, lalu Execute.
+5. Workers & Pages → room-management → Settings → Bindings.
+6. Tambahkan D1 binding:
+   - Variable name: `DB`
+   - Database: `room-management-db`
+7. Save lalu Redeploy.
+8. Tes `https://alamat-kamu.pages.dev/api/health`.
