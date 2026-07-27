@@ -1,13 +1,21 @@
-# Room Management — Workers Assets + D1
+# Update Room Management
 
-1. Upload seluruh isi folder ini ke root repo GitHub `room-management`.
-2. Buat D1 bernama `room-management-db`.
-3. Jalankan isi `schema.sql` pada D1 Console.
-4. Salin Database ID D1.
-5. Ganti `GANTI_DENGAN_DATABASE_ID_D1` di `wrangler.toml`.
-6. Commit perubahan.
-7. Cloudflare build settings:
-   - Build command: kosong
-   - Deploy command: `npx wrangler deploy`
-   - Root directory: `/`
-8. Deploy lalu buka `/api/health`.
+Fitur:
+- Login admin aman dengan session cookie.
+- Dashboard hanya 2 rekap: NikiRoom dan VinzzRoom.
+- Total pemasukan, pengeluaran, dan saldo dipisah per room.
+- Pengeluaran NikiRoom dan VinzzRoom memiliki form serta tabel sendiri.
+- Keterangan pengeluaran tampil pada tabel.
+- Tambah, edit, dan hapus tetap tersedia.
+
+## Pasang
+1. Ganti `GANTI_DENGAN_DATABASE_ID_D1` pada `wrangler.toml` dengan ID D1 milikmu.
+2. Buka D1 > Console, lalu jalankan isi `schema.sql`.
+3. Worker > Settings > Variables and Secrets, tambahkan:
+   - `ADMIN_USERNAME`
+   - `ADMIN_PASSWORD`
+   - `SESSION_SECRET` (teks acak minimal 32 karakter)
+4. Upload semua file ke repo GitHub dan commit.
+5. Deploy command: `npx wrangler deploy`.
+
+`CREATE TABLE IF NOT EXISTS` tidak menghapus data lama. Namun jika struktur tabel lama berbeda, export/cadangkan D1 terlebih dahulu.

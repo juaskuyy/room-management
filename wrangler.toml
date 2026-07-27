@@ -1,6 +1,6 @@
 name = "room-management"
 main = "src/index.js"
-compatibility_date = "2026-07-01"
+compatibility_date = "2026-07-27"
 
 [assets]
 directory = "./public"
