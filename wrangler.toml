@@ -9,4 +9,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "room-management-db"
-database_id = "GANTI_DENGAN_DATABASE_ID_D1"
+database_id = "d4c6825e-0b93-43e6-a90c-6f5237a028b5"
