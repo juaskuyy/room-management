@@ -1,16 +1,15 @@
-DROP TABLE IF EXISTS transactions;
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  agent TEXT NOT NULL CHECK (agent IN ('nikiroom', 'vinzzroom')),
+  room TEXT NOT NULL CHECK (room IN ('NikiRoom','VinzzRoom')),
+  type TEXT NOT NULL CHECK (type IN ('income','expense')),
   date TEXT NOT NULL,
-  check_in_time TEXT,
-  unit TEXT NOT NULL,
-  rental_duration TEXT,
-  income INTEGER NOT NULL DEFAULT 0,
-  expense INTEGER NOT NULL DEFAULT 0,
-  description TEXT,
+  time TEXT DEFAULT '',
+  unit TEXT DEFAULT '',
+  duration TEXT DEFAULT '',
+  amount INTEGER NOT NULL CHECK (amount >= 0),
+  description TEXT DEFAULT '',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_transactions_agent ON transactions(agent);
-CREATE INDEX idx_transactions_date ON transactions(date);
+CREATE INDEX IF NOT EXISTS idx_transactions_room_type ON transactions(room, type);
+CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
