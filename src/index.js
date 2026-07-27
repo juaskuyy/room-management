@@ -1,1 +1,10 @@
-
+function json(data,status=200){return Response.json(data,{status,headers:{"Cache-Control":"no-store"}})}
+function valid(b){if(!["nikiroom","vinzzroom"].includes(b.agent))return"Agen tidak valid.";if(!b.date)return"Tanggal wajib diisi.";if(!b.unit||!String(b.unit).trim())return"Unit wajib diisi.";if(Number(b.income||0)<0||Number(b.expense||0)<0)return"Nominal tidak boleh negatif.";return null}
+export default{async fetch(request,env){const u=new URL(request.url),p=u.pathname;try{
+if(p==="/api/health"&&request.method==="GET"){await env.DB.prepare("SELECT 1").first();return json({ok:true,database:"connected"})}
+if(p==="/api/transactions"&&request.method==="GET"){const r=await env.DB.prepare("SELECT id,agent,date,check_in_time,unit,rental_duration,income,expense,description,created_at,updated_at FROM transactions ORDER BY date DESC,id DESC").all();return json({transactions:r.results||[]})}
+if(p==="/api/transactions"&&request.method==="POST"){const b=await request.json(),e=valid(b);if(e)return json({error:e},400);const r=await env.DB.prepare("INSERT INTO transactions(agent,date,check_in_time,unit,rental_duration,income,expense,description) VALUES(?,?,?,?,?,?,?,?)").bind(b.agent,b.date,b.check_in_time||null,String(b.unit).trim(),b.rental_duration||null,Number(b.income||0),Number(b.expense||0),b.description||null).run();return json({ok:true,id:r.meta.last_row_id},201)}
+const m=p.match(/^\/api\/transactions\/(\d+)$/);if(m&&request.method==="PUT"){const id=Number(m[1]),b=await request.json(),e=valid(b);if(e)return json({error:e},400);const r=await env.DB.prepare("UPDATE transactions SET agent=?,date=?,check_in_time=?,unit=?,rental_duration=?,income=?,expense=?,description=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(b.agent,b.date,b.check_in_time||null,String(b.unit).trim(),b.rental_duration||null,Number(b.income||0),Number(b.expense||0),b.description||null,id).run();return r.meta.changes?json({ok:true}):json({error:"Transaksi tidak ditemukan."},404)}
+if(m&&request.method==="DELETE"){const r=await env.DB.prepare("DELETE FROM transactions WHERE id=?").bind(Number(m[1])).run();return r.meta.changes?json({ok:true}):json({error:"Transaksi tidak ditemukan."},404)}
+return env.ASSETS.fetch(request)
+}catch(error){return json({error:"Terjadi kesalahan pada server.",detail:error.message},500)}}}
